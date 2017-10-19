@@ -1,0 +1,71 @@
+version: '2'
+
+#==============================================================================
+# The below won't work unless you run the following command on computer:
+# sudo sysctl -w vm.max_map_count=262144
+#
+# For head, install "ElasticSearch Head" chrome extension
+#
+# Log into host: http://192.168.1.14:9200/ elastic/changeme
+#==============================================================================
+
+services:
+  elasticsearch1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.2
+    container_name: elasticsearch1
+    hostname: elasticsearch1
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+#      nofile:
+#        soft: 65536
+#        hard: 65536
+    mem_limit: 1g
+#    cap_add:
+#      - IPC_LOCK
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - esnet
+  elasticsearch2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.2
+    container_name: elasticsearch2
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch1"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+#      nofile:
+#        soft: 65536
+#        hard: 65536
+    mem_limit: 1g
+#    cap_add:
+#      - IPC_LOCK
+    volumes:
+      - esdata2:/usr/share/elasticsearch/data
+    networks:
+      - esnet
+
+volumes:
+  esdata1:
+    driver: local
+  esdata2:
+    driver: local
+
+networks:
+  esnet:
+    driver: bridge
