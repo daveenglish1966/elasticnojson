@@ -1,6 +1,8 @@
 # elasticnojson
 
-This project is a Scala client library designed for spped for elasticsearch tested against:
+Written by [**David Alexander English**](https://www.linkedin.com/in/denglish1/)
+
+This project is a Scala client library designed for speed for elasticsearch tested against:
 
 * ElasticSearch Version: 5.6
 * Scala Version: 2.11.6
