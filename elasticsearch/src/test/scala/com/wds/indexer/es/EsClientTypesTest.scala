@@ -2,7 +2,7 @@ package com.wds.indexer.es
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.wds.indexer.es.helpers.EsObj
+import com.wds.indexer.es.helpers.{EsMap, EsObj}
 import org.apache.commons.lang3.builder.{EqualsBuilder, HashCodeBuilder}
 import org.elasticsearch.index.query.QueryBuilders
 import org.elasticsearch.rest.RestStatus
@@ -52,11 +52,39 @@ class EsClientTypesTest extends FunSuite with Matchers with EsClientTestBase {
     esClientTypes should not be null
   }
 
+  test("large insert and getNotify test") {
+    resetIndex()
+
+    // Create list of items
+    val numberOfItems = 100000
+    val list = randomObjects(numberOfItems)
+    val brbr = esClientTypes.insert(list.iterator)
+    brbr.hasFailures should be (false)
+    sleep(20)
+    esClientTypes.count should be (numberOfItems)
+
+    // Scan your 100,000 (numberOfItems) objects here.
+    val listMap = list2EsObjMap(list)
+    val ai = new AtomicInteger(0)
+    val addToList = (esObj: EsObj[Person]) => {
+      val retEsObj = listMap(esObj.id)
+      assert(retEsObj.data === esObj.data)
+      ai.incrementAndGet()
+    } : Unit
+    esClientTypes.getNotify(addToList)
+    ai.get should be (numberOfItems)
+
+    // Cleanup of list
+    esClientTypes.delete(list.iterator)
+    sleep(10)
+    esClientTypes.count should be (0)
+  }
+
   test("test all gets") {
     resetIndex()
 
     val numberOfItems = 10
-    var list = randomObjects(numberOfItems)
+    val list = randomObjects(numberOfItems)
     val results = esClientTypes.upsert(list.iterator)
     results.hasFailures should be (false)
     sleep(1)
@@ -114,7 +142,7 @@ class EsClientTypesTest extends FunSuite with Matchers with EsClientTestBase {
     sleep(1)
     esClientTypes.count should be (numberOfItems)
 
-    var brb2 = esClientTypes.delete(list.iterator)
+    val brb2 = esClientTypes.delete(list.iterator)
     brb2.hasFailures should be (false)
     sleep(1)
     esClientTypes.count should be (0)
@@ -168,16 +196,16 @@ class EsClientTypesTest extends FunSuite with Matchers with EsClientTestBase {
     resetIndex()
 
     val esPerson = randomObject
-    var ir = esClientTypes.insert(esPerson)
+    val ir = esClientTypes.insert(esPerson)
     ir.status should be (RestStatus.CREATED)
     println("ir(1): " + ir.toString)
     sleep(1)
     esClientTypes.count should be (1)
 
     val esPerson2 = new EsObj(ir.getId, esPerson.data)
-    ir = esClientTypes.insert(esPerson2)
-    ir.status should be (RestStatus.OK)
-    println("ir(2): " + ir.toString)
+    val ir2 = esClientTypes.insert(esPerson2)
+    ir2.status should be (RestStatus.OK)
+    println("ir(2): " + ir2.toString)
     sleep(1)
     esClientTypes.count should be (1)
 
@@ -188,7 +216,7 @@ class EsClientTypesTest extends FunSuite with Matchers with EsClientTestBase {
     brbr.hasFailures should be (false)
     esClientTypes.count should be (1+numberToInsert)
 
-    var count = new AtomicInteger(0);
+    val count = new AtomicInteger(0);
     list.foreach(esMap => {
       val fn = esMap.data.firstName
       esClientTypes.count(QueryBuilders.matchQuery("firstName", fn)) should be (1)

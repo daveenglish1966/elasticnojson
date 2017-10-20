@@ -43,7 +43,7 @@ class EsClientMapsTest extends FunSuite with Matchers with EsClientTestBase {
     resetIndex()
 
     val numberOfItems = 10
-    var list = randomMaps(numberOfItems)
+    val list = randomMaps(numberOfItems)
     val results = esClientMaps.upsert(indexName, indexType, list.iterator)
     results.hasFailures should be (false)
     sleep(1)
@@ -107,7 +107,7 @@ class EsClientMapsTest extends FunSuite with Matchers with EsClientTestBase {
     sleep(1)
     esClientMaps.count(indexName, indexType) should be (numberOfItems)
 
-    var brb2 = esClientMaps.delete(indexName, indexType, list.iterator)
+    val brb2 = esClientMaps.delete(indexName, indexType, list.iterator)
     brb2.hasFailures should be (false)
     sleep(1)
     esClientMaps.count(indexName, indexType) should be (0)
@@ -163,16 +163,16 @@ class EsClientMapsTest extends FunSuite with Matchers with EsClientTestBase {
     javaMap.put("firstName", "David")
     javaMap.put("lastName", "English")
 
-    var ir = esClientMaps.insert(indexName, indexType, javaMap)
+    val ir = esClientMaps.insert(indexName, indexType, javaMap)
     ir.status should be (RestStatus.CREATED)
     println("ir(1): " + ir.toString)
     sleep(1)
     esClientMaps.count(indexName, indexType) should be (1)
 
     val esMap = new EsMap(ir.getId, javaMap)
-    ir = esClientMaps.insert(indexName, indexType, esMap)
-    ir.status should be (RestStatus.OK)
-    println("ir(2): " + ir.toString)
+    val ir2 = esClientMaps.insert(indexName, indexType, esMap)
+    ir2.status should be (RestStatus.OK)
+    println("ir(2): " + ir2.toString)
     sleep(1)
     esClientMaps.count(indexName, indexType) should be (1)
 
@@ -183,7 +183,7 @@ class EsClientMapsTest extends FunSuite with Matchers with EsClientTestBase {
     brbr.hasFailures should be (false)
     esClientMaps.count(indexName, indexType) should be (1+numberToInsert)
 
-    var count = new AtomicInteger(0);
+    val count = new AtomicInteger(0);
     list.foreach(esMap => {
       val fn = esMap.map.get("firstName")
       esClientMaps.count(indexName, indexType, QueryBuilders.matchQuery("firstName", fn)) should be (1)

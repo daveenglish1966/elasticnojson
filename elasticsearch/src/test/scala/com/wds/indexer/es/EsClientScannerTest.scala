@@ -28,7 +28,7 @@ class EsClientScannerTest extends FunSuite with Matchers with EsClientTestBase {
     // Create list of items
     val numberOfItems = 100000
     val list = randomMaps(numberOfItems)
-    var brbr = esClientScanner.insert(list.iterator)
+    val brbr = esClientScanner.insert(list.iterator)
     brbr.hasFailures should be (false)
     sleep(10)
     esClientScanner.count should be (numberOfItems)
@@ -41,8 +41,8 @@ class EsClientScannerTest extends FunSuite with Matchers with EsClientTestBase {
 
     // See if everything maps
     scannedList.size should be (numberOfItems)
-    var listMap = list2Map(list)
-    var scannedListMap = list2Map(scannedList)
+    val listMap = list2Map(list)
+    val scannedListMap = list2Map(scannedList)
     listMap.foreach{ esMap =>
       scannedListMap.contains(esMap._1) should be (true)
     }

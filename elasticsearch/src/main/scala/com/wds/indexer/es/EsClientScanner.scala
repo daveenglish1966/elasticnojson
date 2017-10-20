@@ -49,7 +49,7 @@ class EsClientScanner(val esClient: EsClient) {
                      scrollTimeout: TimeValue = TimeValue.timeValueMinutes(2),
                      scrollFetchSize: Int = 1000,
                      quitAfter: Long = 0): Unit = {
-    var searchResponse = searchRequestBuilder.setScroll(scrollTimeout)
+    val searchResponse = searchRequestBuilder.setScroll(scrollTimeout)
                                              .setSize(scrollFetchSize)
                                              .execute
                                              .actionGet

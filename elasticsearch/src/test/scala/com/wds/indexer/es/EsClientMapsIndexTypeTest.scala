@@ -32,7 +32,7 @@ class EsClientMapsIndexTypeTest extends FunSuite with Matchers with EsClientTest
     resetIndex()
 
     val numberOfItems = 10
-    var list = randomMaps(numberOfItems)
+    val list = randomMaps(numberOfItems)
     val results = esClientIndexTypeMaps.upsert(list.iterator)
     results.hasFailures should be (false)
     sleep(1)
@@ -96,7 +96,7 @@ class EsClientMapsIndexTypeTest extends FunSuite with Matchers with EsClientTest
     sleep(1)
     esClientIndexTypeMaps.count should be (numberOfItems)
 
-    var brb2 = esClientIndexTypeMaps.delete(list.iterator)
+    val brb2 = esClientIndexTypeMaps.delete(list.iterator)
     brb2.hasFailures should be (false)
     sleep(1)
     esClientIndexTypeMaps.count should be (0)
@@ -152,16 +152,16 @@ class EsClientMapsIndexTypeTest extends FunSuite with Matchers with EsClientTest
     javaMap.put("firstName", "David")
     javaMap.put("lastName", "English")
 
-    var ir = esClientIndexTypeMaps.insert(javaMap)
+    val ir = esClientIndexTypeMaps.insert(javaMap)
     ir.status should be (RestStatus.CREATED)
     println("ir(1): " + ir.toString)
     sleep(1)
     esClientIndexTypeMaps.count should be (1)
 
     val esMap = new EsMap(ir.getId, javaMap)
-    ir = esClientIndexTypeMaps.insert(esMap)
-    ir.status should be (RestStatus.OK)
-    println("ir(2): " + ir.toString)
+    val ir2 = esClientIndexTypeMaps.insert(esMap)
+    ir2.status should be (RestStatus.OK)
+    println("ir(2): " + ir2.toString)
     sleep(1)
     esClientIndexTypeMaps.count should be (1)
 
@@ -172,7 +172,7 @@ class EsClientMapsIndexTypeTest extends FunSuite with Matchers with EsClientTest
     brbr.hasFailures should be (false)
     esClientIndexTypeMaps.count should be (1+numberToInsert)
 
-    var count = new AtomicInteger(0);
+    val count = new AtomicInteger(0);
     list.foreach(esMap => {
       val fn = esMap.map.get("firstName")
       esClientIndexTypeMaps.count(QueryBuilders.matchQuery("firstName", fn)) should be (1)

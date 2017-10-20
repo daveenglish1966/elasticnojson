@@ -4,8 +4,7 @@ import com.wds.utils.MapSOPrinter
 import org.scalatest.{FunSuite, Matchers}
 
 class Person(val firstName: String,
-             val lastName: String,
-             var id: String = "")
+             val lastName: String)
 
 class MapObjTest extends FunSuite with Matchers {
   test("Basic Serialization to Map") {

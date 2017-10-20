@@ -1,5 +1,8 @@
 package com.wds.indexer.es
 
+import java.io.IOException
+import java.util.concurrent.ExecutionException
+
 import com.wds.indexer.es.helpers.{BrbResults, EsMap, EsObj}
 import com.wds.indexer.es.iterator.{MapIterator, ObjIterator}
 import com.wds.utils.mapping.MapObj
@@ -20,8 +23,12 @@ class EsClientTypes[T](val esClientMaps: EsClientMaps,
   @inline def createSearchRequestBuilder(searchType: SearchType = SearchType.DEFAULT) =
     esClientMapsIndexType.createSearchRequestBuilder(searchType)
 
+  @throws[ExecutionException]
+  @throws[InterruptedException]
   @inline def count : Long =
     esClientMapsIndexType.count
+  @throws[ExecutionException]
+  @throws[InterruptedException]
   @inline def count(queryBuilder: QueryBuilder) : Long =
     esClientMapsIndexType.count(queryBuilder)
 
@@ -49,19 +56,28 @@ class EsClientTypes[T](val esClientMaps: EsClientMaps,
   @inline def deleteByIds(iterator: Iterator[String]): BrbResults =
     esClientMapsIndexType.deleteByIds(iterator)
 
+  @throws[IOException]
   @inline def get(id: String): EsObj[T] = {
     val esMap: EsMap = esClientMapsIndexType.get(id)
     new EsObj(esMap.id, MapObj.map2Obj(esMap.map, tClazz))
   }
+  @throws[ExecutionException]
+  @throws[InterruptedException]
   @inline def get(queryBuilder: QueryBuilder): EsObj[T] = {
     val esMap = esClientMapsIndexType.get(queryBuilder)
     new EsObj(esMap.id, MapObj.map2Obj(esMap.map, tClazz))
   }
 
+  @throws[ExecutionException]
+  @throws[InterruptedException]
   @inline def getList: Iterator[EsObj[T]] =
     new ObjIterator[T](esClientMapsIndexType.getList, tClazz)
+  @throws[ExecutionException]
+  @throws[InterruptedException]
   @inline def getList(ids: Iterator[String]): Iterator[EsObj[T]] =
     new ObjIterator[T](esClientMapsIndexType.getList(ids), tClazz)
+  @throws[ExecutionException]
+  @throws[InterruptedException]
   @inline def getList(srb: SearchRequestBuilder): Iterator[EsObj[T]] =
     new ObjIterator[T](esClientMapsIndexType.getList(srb), tClazz)
 
@@ -79,4 +95,40 @@ class EsClientTypes[T](val esClientMaps: EsClientMaps,
                                                                    scrollFetchSize,
                                                                    scrollTimeout,
                                                                    quitAfter)
+
+  //==========================================================================
+  // getNotify
+  //==========================================================================
+  @throws[ExecutionException]
+  @throws[InterruptedException]
+  @inline def getNotify(consumer: (EsObj[T]) => Unit): Unit = {
+    val esMapConsumer = (esMap: EsMap) => consumer(new EsObj(esMap.id, MapObj.map2Obj(esMap.map, tClazz))) : Unit
+    esClientMapsIndexType.getNotify(esMapConsumer)
+  }
+
+  @throws[ExecutionException]
+  @throws[InterruptedException]
+  @inline def getNotify(ids: Iterator[String],
+                        consumer: (EsObj[T]) => Unit): Unit = {
+    val esMapConsumer = (esMap: EsMap) => consumer(new EsObj(esMap.id, MapObj.map2Obj(esMap.map, tClazz))): Unit
+    esClientMapsIndexType.getNotify(ids, esMapConsumer)
+  }
+
+  @throws[ExecutionException]
+  @throws[InterruptedException]
+  @inline def getNotify(srb: SearchRequestBuilder,
+                        consumer: (EsObj[T]) => Unit): Unit = {
+    val esMapConsumer = (esMap: EsMap) => consumer(new EsObj(esMap.id, MapObj.map2Obj(esMap.map, tClazz))): Unit
+    esClientMapsIndexType.getNotify(srb, esMapConsumer)
+  }
+
+  @throws[ExecutionException]
+  @throws[InterruptedException]
+  @inline def getNotify(indexName: String,
+                        indexType: String,
+                        queryBuilder: QueryBuilder,
+                        consumer: (EsObj[T]) => Unit): Unit = {
+    val esMapConsumer = (esMap: EsMap) => consumer(new EsObj(esMap.id, MapObj.map2Obj(esMap.map, tClazz))): Unit
+    esClientMapsIndexType.getNotify(queryBuilder, esMapConsumer)
+  }
 }

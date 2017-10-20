@@ -40,11 +40,6 @@ class EsClientMaps(esClient: EsClient) extends EsClientScanner(esClient) {
   }
 
   //==========================================================================
-  // Constants
-  //==========================================================================
-  val didntWork: String = ""
-
-  //==========================================================================
   // insert
   // https://www.elastic.co/guide/en/elasticsearch/client/java-api/current/java-docs-index.html
   //==========================================================================
@@ -223,5 +218,45 @@ class EsClientMaps(esClient: EsClient) extends EsClientScanner(esClient) {
     val addToList = (esMap: EsMap) => listBuffer += esMap : Unit
     iterateResults(srb, addToList)
     listBuffer.toList.iterator
+  }
+
+  //==========================================================================
+  // getNotify
+  //==========================================================================
+  @throws[ExecutionException]
+  @throws[InterruptedException]
+  @inline def getNotify(indexName: String,
+                        indexType: String,
+                        consumer: (EsMap) => Unit): Unit = {
+    val srb = createSearchRequestBuilder(indexName, indexType)
+    iterateResults(srb, consumer)
+  }
+
+  @throws[ExecutionException]
+  @throws[InterruptedException]
+  def getNotify(indexName: String,
+                indexType: String,
+                ids: Iterator[String],
+                consumer: (EsMap) => Unit): Unit = {
+    val srb = createSearchRequestBuilder(indexName, indexType)
+      .setQuery(QueryBuilders.idsQuery().addIds(ids.toArray: _*))
+    getNotify(srb, consumer)
+  }
+
+  @throws[ExecutionException]
+  @throws[InterruptedException]
+  @inline def getNotify(srb: SearchRequestBuilder,
+                        consumer: (EsMap) => Unit): Unit = {
+    iterateResults(srb, consumer)
+  }
+
+  @throws[ExecutionException]
+  @throws[InterruptedException]
+  @inline def getNotify(indexName: String,
+                        indexType: String,
+                        queryBuilder: QueryBuilder,
+                        consumer: (EsMap) => Unit): Unit = {
+    val srb = createSearchRequestBuilder(indexName, indexType).setQuery(queryBuilder)
+    iterateResults(srb, consumer)
   }
 }
